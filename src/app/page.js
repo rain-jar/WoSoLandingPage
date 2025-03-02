@@ -9,6 +9,29 @@ import "swiper/css";
 import "swiper/css/pagination";
 import ReactPlayer from "react-player";
 
+import { FaTwitter, FaInstagram, FaTiktok } from "react-icons/fa";
+import { SiBluesky } from "react-icons/si";
+
+const SocialLinks = () => (
+  <SocialContainer>
+    <a href="https://twitter.com/WoSoFantasy" target="_blank" rel="noopener noreferrer">
+      <FaTwitter />
+    </a>
+    <a href="https://bsky.app/profile/wosofantasy.bsky.social" target="_blank" rel="noopener noreferrer">
+      <SiBluesky />
+    </a>
+    {/*
+    <a href="https://instagram.com/WoSoFantasy" target="_blank" rel="noopener noreferrer">
+      <FaInstagram />
+    </a>
+    <a href="https://tiktok.com/@WoSoFantasy" target="_blank" rel="noopener noreferrer">
+      <FaTiktok />
+    </a>
+    */}
+
+  </SocialContainer>
+);
+
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: "700" });
 
@@ -30,13 +53,27 @@ const LandingPage = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async () => {
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) return;
-    await fetch("/api/subscribe", {
+    const blockedDomains = ["test.com", "example.com", "mailinator.com", "fake.com"];
+    const emailDomain = email.split("@")[1];
+    
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) || blockedDomains.includes(emailDomain)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+  
+    const response = await fetch("/api/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     });
-    setSubmitted(true);
+  
+    const result = await response.json();
+  
+    if (response.ok) {
+      setSubmitted(true);
+    } else {
+      alert(result.error || "Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -44,12 +81,13 @@ const LandingPage = () => {
       <Header>
         <Logo src="/woso-logo.png" alt="WoSo Fantasy Logo" />
         <Title className={playfair.className}>WoSo Fantasy</Title>
+        <SocialLinks />
       </Header>
       <Main>
         <Heading>Fantasy Women's Soccer is here!</Heading>
-        <Tagline>Because winning starts with a W</Tagline>
+        <Tagline>Draft the future of women's soccer</Tagline>
         <CarouselContainer>
-        <Swiper modules={[Pagination, Autoplay]} pagination={{ clickable: true }} autoplay={{ delay: 35000 }}>
+        <Swiper modules={[Pagination, Autoplay]} pagination={{ clickable: true }} autoplay={{ delay: 44000 }}>
           <SwiperSlide>
             <VideoWrapper>
               <video controls autoPlay muted playsInline width="100%" height="100%">
@@ -67,16 +105,16 @@ const LandingPage = () => {
           <SwiperSlide>
             <VideoWrapper>
               <video controls autoPlay muted playsInline width="100%" height="100%">
-                <source src="/app-preview-ios.mp4" type="video/mp4" />
+                <source src="/app-preview-ioscut.mp4" type="video/mp4" />
               </video>
             </VideoWrapper>
           </SwiperSlide>
         </Swiper>
         </CarouselContainer>
-        <Subtitle>2025 Fantasy Season launches on March 7th!</Subtitle>
+        <Subtitle>NWSL Fantasy Season launching on March 9th!</Subtitle>
         <EmailContainer>
           {submitted ? (
-            <SuccessMessage>Excited to have you in the WoSo Fantasy world!</SuccessMessage>
+            <SuccessMessage>Thank you for the interest! You'll hear from us shortly</SuccessMessage>
           ) : (
             <>
               <EmailInput
@@ -108,11 +146,25 @@ const Container = styled.div`
 `;
 
 const Header = styled.div`
-  position: absolute;
-  top: 20px;
-  left: 20px;
+  width: 100%;
+  font-size: 30px;
+  max-width: 100%;
+  word-wrap: break-word;
   display: flex;
+  justify-content: space-between; /* Ensures icons stay on the right */
   align-items: center;
+  padding: 10px 20px;
+  position: absolute; /* Make it overlay instead of taking space */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10; /* Keep it above other content */
+
+  @media (max-width: 768px) { /* Adjust for mobile */
+    font-size: 24px;
+    flex-direction: row;
+    align-items: center;
+  }
 `;
 
 const Logo = styled.img`
@@ -124,7 +176,8 @@ const Logo = styled.img`
 const Title = styled.h1`
   font-size: 24px;
   font-weight: bold;
-  font-family: ${playfair.style.fontFamily};
+  color: #62FCDA;
+  font-family: "American Typewriter", Georgia, serif;
 
 `;
 
@@ -133,11 +186,19 @@ const Main = styled.div`
   width: 100%;
   max-width: 700px;
   justify-content: center;
+  margin-top :100px;
+  padding : 10px;
 `;
 
 const Heading = styled.h2`
-  font-size: 32px;
+  font-size: 30px;
   margin-bottom: 10px;
+  max-width: 100%; /* Prevents overflow */
+  word-wrap: break-word;
+
+  @media (max-width: 768px) { /* Adjust for mobile */
+    font-size: 24px;
+  }
 `;
 
 const Tagline = styled.p`
@@ -214,7 +275,7 @@ const Image = styled.img`
 
 const Subtitle = styled.h3`
   font-size: 18px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 `;
 
 const EmailContainer = styled.div`
@@ -224,12 +285,12 @@ const EmailContainer = styled.div`
 `;
 
 const EmailInput = styled.input`
-  padding: 10px;
+  padding: 20px;
   width: 80%;
   border-radius: 20px;
   border: none;
   outline: none;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
     //box-shadow: 0px 1px 5px #62FCDA; /* Soft shadow */
   transition: box-shadow 0.3s ease-in-out;
 
@@ -255,4 +316,20 @@ const SubmitButton = styled.button`
 const SuccessMessage = styled.p`
   font-size: 16px;
   color: #4aff4a;
+`;
+
+const SocialContainer = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-left: auto; /* Pushes icons to the right */
+
+  a {
+    color: white;
+    font-size: 24px;
+    transition: transform 0.2s ease-in-out;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
 `;
